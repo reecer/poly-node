@@ -1,0 +1,109 @@
+
+<link rel="import" href="../bower_components/core-menu/core-menu.html">
+<link rel="import" href="../bower_components/core-item/core-item.html">
+
+<script src="../bower_components/jquery/dist/jquery.min.js"></script>
+
+<polymer-element name="one-page" attributes="color label">
+	<template>
+		<style>
+			:host{
+				height: 100%;
+				width: 100%;
+				display: block;	
+			}
+		</style>
+		<content></content>
+	</template>
+	<script>
+		Polymer('one-page',{
+			index: null,
+			ready: function(){
+				this.style.backgroundColor = this.color;
+				this.id = this.label;
+			},
+			show: function(){
+				$('html, body').animate({
+					scrollTop: this.offsetTop
+				});
+			}
+		});
+	</script>
+</polymer-element>
+
+
+<polymer-element name="onepage-nav" attributes="color">
+	<template>
+		<style>
+		    :host{
+			height: 100%;
+			width; 100%;
+		    }
+		    core-menu {
+			position: fixed;
+		    }
+		    core-item:hover{
+			cursor: pointer !important;
+			font-weight: bold;
+		    }
+		</style>
+		<core-menu id='menu' selected="0" on-core-select="{{ onChange }}"></core-menu>
+		<content></content>
+	</template>
+
+	<script>
+	    (function(){
+		var hold = false;
+		Polymer('onepage-nav', {
+			SCROLL_DELAY: 1000,
+			selected: null,
+			ready: function(){
+				this.pages = {};
+				this.$.menu.style.color = this.color;
+
+				var self = this;
+				this.children.array().forEach(function(el, i){
+					var label = el.getAttribute('label');
+					el.index = i;
+					self.pages[label] = el;
+					console.log(label);
+					self.$.menu.appendChild($('<core-item label="'+label+'">')[0]);	
+				});
+				
+				document.addEventListener('scroll', function(e){
+					var closest = self.closest(window.scrollY);
+					if(self.select(closest.index))
+						self.job('scroll', function(){
+							hold = false;
+							closest.show();
+						}, self.SCROLL_DELAY);
+				});
+			},
+			select: function(index){
+				if(this.selected == index) return false;
+				console.log('scrolling to ', index);
+				this.selected = index;
+				hold = true;
+				this.$.menu.setAttribute('selected', index);
+				return true;
+			},
+			closest: function(top){
+				var best = null;
+				for(var l in this.pages){
+					if(best == null || Math.abs(this.pages[l].offsetTop - top) < Math.abs(best.offsetTop - top))
+						best = this.pages[l];
+				}
+				return best;
+			},
+			onChange: function(e, detail){
+				if(!hold && detail.isSelected){
+					var id = detail.item.getAttribute('label');
+					this.pages[id].show();
+				}
+			}
+		});
+
+	    })();
+	</script>
+</polymer-element>
+
