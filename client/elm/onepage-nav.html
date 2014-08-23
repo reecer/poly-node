@@ -36,15 +36,15 @@
 	<template>
 		<style>
 		    :host{
-			height: 100%;
-			width; 100%;
+				height: 100%;
+				width; 100%;
 		    }
 		    core-menu {
-			position: fixed;
+				position: fixed;
 		    }
 		    core-item:hover{
-			cursor: pointer !important;
-			font-weight: bold;
+				cursor: pointer !important;
+				font-weight: bold;
 		    }
 		</style>
 		<core-menu id='menu' selected="0" on-core-select="{{ onChange }}"></core-menu>
@@ -71,21 +71,26 @@
 				});
 				
 				document.addEventListener('scroll', function(e){
-					var closest = self.closest(window.scrollY);
-					if(self.select(closest.index))
-						self.job('scroll', function(){
-							hold = false;
-							closest.show();
-						}, self.SCROLL_DELAY);
+					if(!hold)
+						self.select();
 				});
 			},
-			select: function(index){
-				if(this.selected == index) return false;
-				console.log('scrolling to ', index);
-				this.selected = index;
+			show: function(page){
 				hold = true;
-				this.$.menu.setAttribute('selected', index);
-				return true;
+				this.job('scroll', function(){
+					hold = false;
+					page.show();
+				}, this.SCROLL_DELAY);
+			},
+			select: function(index){
+				if(!index){
+					index = this.closest(window.scrollY);
+				}else if(this.selected == index) ;
+				else{
+					console.log('scrolling to ', index);
+					this.selected = index;
+					this.$.menu.setAttribute('selected', index);
+				}
 			},
 			closest: function(top){
 				var best = null;
